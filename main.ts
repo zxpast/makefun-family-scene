@@ -10,7 +10,7 @@
 // affection (Mom eats her own burnt slice so Dad won't eat alone),
 // and the turn in the very last words.
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const ENTRY =
   "Dad saves the burnt toast for himself, calls it \u2018the crispy one,\u2019 and every morning Mom pretends to believe him \u2014 then eats her own burnt slice too, so he won\u2019t eat alone.";
@@ -24,6 +24,15 @@ if (charCount < 1 || charCount > MAX_CHARS) {
 if (ENTRY.trim().length === 0) {
   throw new Error("entry must not be only whitespace");
 }
+const lineCount = ENTRY.split("\n").length;
+if (lineCount < 1 || lineCount > 2) {
+  throw new Error(`entry is ${lineCount} lines, must be 1-2`);
+}
 
 mkdirSync("/output", { recursive: true });
 writeFileSync("/output/entry.txt", ENTRY, "utf8");
+// Read back what was written: a silent truncated or corrupted write
+// would score 0, so fail loudly instead of trusting the write.
+if (readFileSync("/output/entry.txt", "utf8") !== ENTRY) {
+  throw new Error("written entry does not match the validated entry");
+}
